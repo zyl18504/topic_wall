@@ -1,0 +1,68 @@
+{% autoescape None %}
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<style type="text/css">
+    p {border-style:solid;border-width:1px;}
+</style>
+
+<html>
+    <head>
+        <title>{{topic_name}} 的搜索结果</title>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    </head>
+    <body>
+        <div id="result"></div>
+    </body>
+</html>
+
+
+<script type="text/javascript" src="http://lib.sinaapp.com/js/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript">
+var topic_name = "{{topic_name}}";
+
+jQuery(document).ready(function($) {
+    setInterval("check()", 1000);
+});
+
+function check(){
+    $.ajax({
+        type: "GET",
+        data: {"keyword": topic_name},
+        url: "/result",
+        success: function(ret){
+            if (ret != ""){
+                latest_info_list = $.parseJSON(ret);
+                console.log(latest_info_list);
+                for(var i = 0; i< latest_info_list.length; i ++){
+                    latest_info_html = "";
+                    message_id = latest_info_list[i]["message_id"];
+                    if($("#"+message_id).length == 0){
+                        var latest_text_info = latest_info_list[i]['context'];
+                        var latest_attached_list = latest_info_list[i]['img_src_list'];
+                        if(latest_text_info != undefined){
+                            latest_info_html += "<p id="+message_id+">";
+                            latest_info_html += latest_text_info;
+                        }
+                        if(latest_attached_list != undefined){
+                            if(latest_info_html.indexOf("<p") < 0){
+                                latest_info_html += "<p id="+message_id+">";
+                            }
+                            latest_info_html += "<br/>";
+                            for(var n = 0;n<latest_attached_list.length;n++){
+                                latest_info_html += "<img src='"+latest_attached_list[n]+"' />";
+                            }
+                        }
+                        if(latest_info_html.indexOf("<p") >= 0){
+                            latest_info_html += "</p>";
+                            $("#result").prepend(latest_info_html); 
+                        }
+                        
+                    }
+                }
+                
+                
+            }
+        }
+    });
+}
+</script>
